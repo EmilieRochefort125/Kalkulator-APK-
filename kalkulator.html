@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator | Zidane</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#C9973A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kalkulator">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #e0e5ec;
+    --shadow-light: #ffffff;
+    --shadow-dark: #a3b1c6;
+    --text: #4a5568;
+    --text2: #8896a5;
+    --gold: #C9973A;
+    --gold2: #e8b96a;
+    --accent: #1D9E75;
+    --red: #e24b4a;
+    --neu-out: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+    --neu-in: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+    --neu-out-sm: 3px 3px 7px var(--shadow-dark), -3px -3px 7px var(--shadow-light);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    padding: 20px;
+  }
+
+  .wrapper {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* CALCULATOR */
+  .calc {
+    background: var(--bg);
+    border-radius: 28px;
+    box-shadow: var(--neu-out);
+    padding: 28px;
+    width: 340px;
+  }
+
+  .calc-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .calc-title {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--text2);
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* DISPLAY */
+  .display-wrap {
+    background: var(--bg);
+    border-radius: 18px;
+    box-shadow: var(--neu-in);
+    padding: 20px 24px 16px;
+    margin-bottom: 24px;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .display-expression {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    min-height: 18px;
+    text-align: right;
+    margin-bottom: 6px;
+    word-break: break-all;
+  }
+
+  .display-main {
+    font-family: 'DM Mono', monospace;
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--text);
+    text-align: right;
+    word-break: break-all;
+    line-height: 1.1;
+    transition: color 0.2s;
+  }
+
+  .display-main.result { color: var(--gold); }
+
+  /* MODE TOGGLE */
+  .mode-toggle {
+    display: flex;
+    background: var(--bg);
+    border-radius: 12px;
+    box-shadow: var(--neu-in);
+    padding: 4px;
+    margin-bottom: 20px;
+    gap: 2px;
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    border-radius: 9px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .mode-btn.active {
+    background: var(--bg);
+    box-shadow: var(--neu-out-sm);
+    color: var(--gold);
+  }
+
+  /* BUTTONS GRID */
+  .btn-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .btn-grid.scientific {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  button.btn {
+    border: none;
+    background: var(--bg);
+    border-radius: 14px;
+    box-shadow: var(--neu-out-sm);
+    padding: 0;
+    height: 58px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+  }
+
+  button.btn:active, button.btn.pressed {
+    box-shadow: var(--neu-in);
+    transform: scale(0.97);
+    color: var(--gold);
+  }
+
+  button.btn.op {
+    color: var(--gold);
+    font-size: 20px;
+  }
+
+  button.btn.op:active { color: var(--gold2); }
+
+  button.btn.eq {
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: white;
+    box-shadow: 4px 4px 10px rgba(201,151,58,0.4), -2px -2px 6px rgba(255,255,255,0.6);
+    font-size: 20px;
+  }
+
+  button.btn.eq:active {
+    box-shadow: inset 3px 3px 8px rgba(0,0,0,0.2), inset -2px -2px 5px rgba(255,255,255,0.1);
+  }
+
+  button.btn.clear {
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  button.btn.accent { color: var(--accent); }
+
+  button.btn.span2 { grid-column: span 2; }
+
+  button.btn.sci {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    letter-spacing: 0.02em;
+    height: 48px;
+    border-radius: 12px;
+  }
+
+  button.btn.sci:active { color: var(--accent); }
+
+  /* HISTORY PANEL */
+  .history-panel {
+    background: var(--bg);
+    border-radius: 28px;
+    box-shadow: var(--neu-out);
+    padding: 24px;
+    width: 240px;
+    max-height: 580px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .history-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text2);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .history-clear {
+    background: none;
+    border: none;
+    font-size: 10px;
+    color: var(--red);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.08em;
+  }
+
+  .history-list {
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .history-list::-webkit-scrollbar { width: 3px; }
+  .history-list::-webkit-scrollbar-thumb { background: var(--shadow-dark); border-radius: 2px; }
+
+  .history-item {
+    background: var(--bg);
+    border-radius: 12px;
+    box-shadow: var(--neu-in);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .history-item:hover { box-shadow: var(--neu-out-sm); }
+
+  .history-expr {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text2);
+    margin-bottom: 4px;
+    word-break: break-all;
+  }
+
+  .history-result {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--gold);
+  }
+
+  .history-empty {
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 40px;
+    opacity: 0.6;
+  }
+
+  /* SCIENTIFIC PANEL */
+  .sci-panel {
+    display: none;
+  }
+
+  .sci-panel.show { display: grid; }
+
+  .sci-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  @media(max-width: 660px) {
+    .history-panel { width: 100%; max-height: 200px; }
+    .wrapper { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- CALCULATOR -->
+  <div class="calc">
+    <div class="calc-header">
+      <span class="calc-title">Calculator · Zidane</span>
+    </div>
+
+    <!-- DISPLAY -->
+    <div class="display-wrap">
+      <div class="display-expression" id="expression"></div>
+      <div class="display-main" id="display">0</div>
+    </div>
+
+    <!-- MODE TOGGLE -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" onclick="setMode('basic')">Basic</button>
+      <button class="mode-btn" onclick="setMode('scientific')">Scientific</button>
+    </div>
+
+    <!-- SCIENTIFIC BUTTONS -->
+    <div class="sci-panel" id="sciPanel">
+      <div class="sci-grid">
+        <button class="btn sci" onclick="sciFunc('sin')">sin</button>
+        <button class="btn sci" onclick="sciFunc('cos')">cos</button>
+        <button class="btn sci" onclick="sciFunc('tan')">tan</button>
+        <button class="btn sci" onclick="sciFunc('log')">log</button>
+        <button class="btn sci" onclick="sciFunc('ln')">ln</button>
+        <button class="btn sci" onclick="sciFunc('sqrt')">√</button>
+        <button class="btn sci" onclick="sciFunc('pow2')">x²</button>
+        <button class="btn sci" onclick="sciFunc('pow3')">x³</button>
+        <button class="btn sci" onclick="appendVal('Math.PI')">π</button>
+        <button class="btn sci" onclick="appendVal('Math.E')">e</button>
+        <button class="btn sci" onclick="sciFunc('abs')">|x|</button>
+        <button class="btn sci" onclick="sciFunc('fact')">n!</button>
+      </div>
+    </div>
+
+    <!-- BASIC BUTTONS -->
+    <div class="btn-grid" id="btnGrid">
+      <button class="btn clear" onclick="clearAll()">AC</button>
+      <button class="btn accent" onclick="toggleSign()">+/−</button>
+      <button class="btn accent" onclick="percent()">%</button>
+      <button class="btn op" onclick="appendOp('/')">÷</button>
+
+      <button class="btn" onclick="appendVal('7')">7</button>
+      <button class="btn" onclick="appendVal('8')">8</button>
+      <button class="btn" onclick="appendVal('9')">9</button>
+      <button class="btn op" onclick="appendOp('*')">×</button>
+
+      <button class="btn" onclick="appendVal('4')">4</button>
+      <button class="btn" onclick="appendVal('5')">5</button>
+      <button class="btn" onclick="appendVal('6')">6</button>
+      <button class="btn op" onclick="appendOp('-')">−</button>
+
+      <button class="btn" onclick="appendVal('1')">1</button>
+      <button class="btn" onclick="appendVal('2')">2</button>
+      <button class="btn" onclick="appendVal('3')">3</button>
+      <button class="btn op" onclick="appendOp('+')">+</button>
+
+      <button class="btn span2" onclick="appendVal('0')">0</button>
+      <button class="btn" onclick="appendDot()">.</button>
+      <button class="btn eq" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div class="history-panel">
+    <div class="history-title">
+      <span>History</span>
+      <button class="history-clear" onclick="clearHistory()">Hapus</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <div class="history-empty" id="historyEmpty">Belum ada perhitungan</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let current = '0';
+  let expression = '';
+  let justCalculated = false;
+  let mode = 'basic';
+  let history = [];
+
+  const display = document.getElementById('display');
+  const exprEl = document.getElementById('expression');
+
+  function updateDisplay(val, isResult = false) {
+    display.textContent = val;
+    display.className = 'display-main' + (isResult ? ' result' : '');
+  }
+
+  function updateExpr(val) {
+    exprEl.textContent = val;
+  }
+
+  function appendVal(val) {
+    if (justCalculated) {
+      current = '';
+      expression = '';
+      justCalculated = false;
+    }
+    if (current === '0' && val !== '.') {
+      current = val;
+    } else {
+      current += val;
+    }
+    updateDisplay(formatDisplay(current));
+    updateExpr(expression + current);
+  }
+
+  function appendOp(op) {
+    justCalculated = false;
+    const opDisplay = op === '*' ? '×' : op === '/' ? '÷' : op === '-' ? '−' : op;
+    if (current !== '' && current !== '-') {
+      expression += current + ' ' + opDisplay + ' ';
+      current = '';
+      updateExpr(expression);
+      updateDisplay('0');
+    } else if (expression !== '') {
+      // replace last operator
+      expression = expression.replace(/[\+\−\×\÷\*\/]\s*$/, opDisplay + ' ');
+      updateExpr(expression);
+    }
+  }
+
+  function appendDot() {
+    if (justCalculated) { current = '0'; justCalculated = false; }
+    if (!current.includes('.')) {
+      current = current === '' ? '0.' : current + '.';
+      updateDisplay(current);
+      updateExpr(expression + current);
+    }
+  }
+
+  function clearAll() {
+    current = '0';
+    expression = '';
+    justCalculated = false;
+    updateDisplay('0');
+    updateExpr('');
+  }
+
+  function toggleSign() {
+    if (current !== '' && current !== '0') {
+      current = current.startsWith('-') ? current.slice(1) : '-' + current;
+      updateDisplay(formatDisplay(current));
+      updateExpr(expression + current);
+    }
+  }
+
+  function percent() {
+    if (current !== '') {
+      current = String(parseFloat(current) / 100);
+      updateDisplay(formatDisplay(current));
+      updateExpr(expression + current);
+    }
+  }
+
+  function calculate() {
+    if (current === '' && expression === '') return;
+    try {
+      const fullExpr = expression + current;
+      const evalExpr = fullExpr
+        .replace(/×/g, '*')
+        .replace(/÷/g, '/')
+        .replace(/−/g, '-');
+
+      let result = Function('"use strict"; return (' + evalExpr + ')')();
+
+      if (!isFinite(result)) { updateDisplay('Error'); return; }
+
+      result = parseFloat(result.toFixed(10));
+      const displayResult = formatDisplay(String(result));
+
+      addHistory(fullExpr + ' =', displayResult);
+      updateExpr(fullExpr + ' =');
+      updateDisplay(displayResult, true);
+      current = String(result);
+      expression = '';
+      justCalculated = true;
+    } catch(e) {
+      updateDisplay('Error');
+      current = '0';
+      expression = '';
+    }
+  }
+
+  function sciFunc(func) {
+    let val = parseFloat(current) || 0;
+    let result;
+    let label = '';
+    try {
+      switch(func) {
+        case 'sin': result = Math.sin(val * Math.PI / 180); label = `sin(${val})`; break;
+        case 'cos': result = Math.cos(val * Math.PI / 180); label = `cos(${val})`; break;
+        case 'tan': result = Math.tan(val * Math.PI / 180); label = `tan(${val})`; break;
+        case 'log': result = Math.log10(val); label = `log(${val})`; break;
+        case 'ln':  result = Math.log(val); label = `ln(${val})`; break;
+        case 'sqrt': result = Math.sqrt(val); label = `√(${val})`; break;
+        case 'pow2': result = Math.pow(val, 2); label = `${val}²`; break;
+        case 'pow3': result = Math.pow(val, 3); label = `${val}³`; break;
+        case 'abs': result = Math.abs(val); label = `|${val}|`; break;
+        case 'fact':
+          if (val < 0 || val > 170 || !Number.isInteger(val)) { updateDisplay('Error'); return; }
+          result = factorial(val); label = `${val}!`; break;
+      }
+      result = parseFloat(result.toFixed(10));
+      const displayResult = formatDisplay(String(result));
+      addHistory(label + ' =', displayResult);
+      updateExpr(label + ' =');
+      updateDisplay(displayResult, true);
+      current = String(result);
+      expression = '';
+      justCalculated = true;
+    } catch(e) { updateDisplay('Error'); }
+  }
+
+  function factorial(n) {
+    if (n === 0 || n === 1) return 1;
+    return n * factorial(n - 1);
+  }
+
+  function formatDisplay(val) {
+    if (val === '' || val === '-') return val || '0';
+    const num = parseFloat(val);
+    if (isNaN(num)) return val;
+    if (Math.abs(num) >= 1e10) return num.toExponential(4);
+    return val;
+  }
+
+  function setMode(m) {
+    mode = m;
+    document.querySelectorAll('.mode-btn').forEach((b, i) => {
+      b.classList.toggle('active', (i === 0 && m === 'basic') || (i === 1 && m === 'scientific'));
+    });
+    const sciPanel = document.getElementById('sciPanel');
+    sciPanel.classList.toggle('show', m === 'scientific');
+  }
+
+  function addHistory(expr, result) {
+    history.unshift({ expr, result });
+    if (history.length > 20) history.pop();
+    renderHistory();
+  }
+
+  function clearHistory() {
+    history = [];
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('historyList');
+    const empty = document.getElementById('historyEmpty');
+    if (history.length === 0) {
+      list.innerHTML = '<div class="history-empty" id="historyEmpty">Belum ada perhitungan</div>';
+      return;
+    }
+    list.innerHTML = history.map((h, i) => `
+      <div class="history-item" onclick="useHistory(${i})">
+        <div class="history-expr">${h.expr}</div>
+        <div class="history-result">${h.result}</div>
+      </div>
+    `).join('');
+  }
+
+  function useHistory(i) {
+    current = history[i].result.replace(/,/g, '');
+    expression = '';
+    justCalculated = true;
+    updateDisplay(history[i].result, true);
+    updateExpr(history[i].expr);
+  }
+
+  // Keyboard support
+  document.addEventListener('keydown', e => {
+    if (e.key >= '0' && e.key <= '9') appendVal(e.key);
+    else if (e.key === '+') appendOp('+');
+    else if (e.key === '-') appendOp('-');
+    else if (e.key === '*') appendOp('*');
+    else if (e.key === '/') { e.preventDefault(); appendOp('/'); }
+    else if (e.key === '.') appendDot();
+    else if (e.key === 'Enter' || e.key === '=') calculate();
+    else if (e.key === 'Escape') clearAll();
+    else if (e.key === 'Backspace') {
+      if (current.length > 1) { current = current.slice(0, -1); updateDisplay(current); }
+      else { current = '0'; updateDisplay('0'); }
+    }
+    else if (e.key === '%') percent();
+  });
+</script>
+
+<script>
+  // Register Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(() => console.log('SW registered'))
+        .catch(err => console.log('SW error:', err));
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "Kalkulator - Zidane",
+  "short_name": "Kalkulator",
+  "description": "Kalkulator Neumorphism by Muhammad Zidane Rudiansyah",
+  "start_url": "/kalkulator.html",
+  "display": "standalone",
+  "background_color": "#e0e5ec",
+  "theme_color": "#C9973A",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
